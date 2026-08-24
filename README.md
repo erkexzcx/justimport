@@ -54,14 +54,14 @@ All configuration is via environment variables. No config files.
 
 | Variable | Default | Description |
 |---|---|---|
-| `RADARR_URL` | *(unset)* | Base URL of your Radarr instance, e.g. `http://radarr:7878` |
-| `RADARR_API_KEY` | *(unset)* | Radarr API key |
-| `SONARR_URL` | *(unset)* | Base URL of your Sonarr instance, e.g. `http://sonarr:8989` |
-| `SONARR_API_KEY` | *(unset)* | Sonarr API key |
+| `RADARR_URL` / `RADARR_URL_<N>` | *(unset)* | Base URL of your Radarr instance(s), e.g. `http://radarr:7878` |
+| `RADARR_API_KEY` / `RADARR_API_KEY_<N>` | *(unset)* | Radarr API key(s) |
+| `SONARR_URL` / `SONARR_URL_<N>` | *(unset)* | Base URL of your Sonarr instance(s), e.g. `http://sonarr:8989` |
+| `SONARR_API_KEY` / `SONARR_API_KEY_<N>` | *(unset)* | Sonarr API key(s) |
 | `POLL_INTERVAL` | `60s` | How often to check queues (Go duration: `30s`, `1m`, `5m`, …) |
 | `DRY_RUN` | `true` | Set to `false` to enable real imports |
 
-> **Note:** You do **not** need both Radarr and Sonarr. Configure only the services you use — at least one of `RADARR_URL` or `SONARR_URL` must be set.
+> **Note:** You can add as many instances as you want by simply appending an incrementing number to the environment variables (e.g. `RADARR_URL_1`, `RADARR_URL_2`, etc.). You do **not** need both Radarr and Sonarr. Configure only the services you use — at least one valid URL must be set.
 
 ---
 
@@ -77,8 +77,17 @@ services:
       # Configure Radarr, Sonarr, or both — at least one is required.
       - RADARR_URL=http://radarr:7878
       - RADARR_API_KEY=your-radarr-api-key
+      
+      # Need multiple instances? Just add a number!
+      # - RADARR_URL_1=http://radarr4k:7878
+      # - RADARR_API_KEY_1=your-radarr-4k-api-key
+      
       # - SONARR_URL=http://sonarr:8989          # uncomment if you use Sonarr
       # - SONARR_API_KEY=your-sonarr-api-key      # uncomment if you use Sonarr
+      
+      # - SONARR_URL_1=http://sonarr-anime:8989
+      # - SONARR_API_KEY_1=your-sonarr-anime-api-key
+      
       - POLL_INTERVAL=60s
       - DRY_RUN=true   # change to false when ready
 ```

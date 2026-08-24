@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -41,24 +42,16 @@ func main() {
 
 	var clients []importer.ArrClient
 
-	if cfg.RadarrURL != "" {
-		c := arrclient.NewClient(cfg.RadarrURL, cfg.RadarrAPIKey, "radarr")
+	for _, instance := range cfg.Instances {
+		c := arrclient.NewClient(instance.URL, instance.APIKey, instance.Type)
 		appName, appVersion, connErr := c.CheckConnectivity(ctx)
-		if connErr != nil {
-			slog.Warn(fmt.Sprintf("Radarr: %s ✗ (failed to connect: %v) — will retry on each poll", cfg.RadarrURL, connErr))
-		} else {
-			slog.Info(fmt.Sprintf("Radarr: %s ✓ (connected, %s v%s)", cfg.RadarrURL, appName, appVersion))
-		}
-		clients = append(clients, c)
-	}
 
-	if cfg.SonarrURL != "" {
-		c := arrclient.NewClient(cfg.SonarrURL, cfg.SonarrAPIKey, "sonarr")
-		appName, appVersion, connErr := c.CheckConnectivity(ctx)
+		nameDisplay := strings.ToTitle(instance.Type[:1]) + instance.Type[1:]
+
 		if connErr != nil {
-			slog.Warn(fmt.Sprintf("Sonarr: %s ✗ (failed to connect: %v) — will retry on each poll", cfg.SonarrURL, connErr))
+			slog.Warn(fmt.Sprintf("%s: %s ✗ (failed to connect: %v) — will retry on each poll", nameDisplay, instance.URL, connErr))
 		} else {
-			slog.Info(fmt.Sprintf("Sonarr: %s ✓ (connected, %s v%s)", cfg.SonarrURL, appName, appVersion))
+			slog.Info(fmt.Sprintf("%s: %s ✓ (connected, %s v%s)", nameDisplay, instance.URL, appName, appVersion))
 		}
 		clients = append(clients, c)
 	}

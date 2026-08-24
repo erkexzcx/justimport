@@ -14,6 +14,8 @@ func clearEnv(t *testing.T) {
 	for _, key := range []string{
 		"RADARR_URL", "RADARR_API_KEY",
 		"SONARR_URL", "SONARR_API_KEY",
+		"RADARR_URL_1", "RADARR_API_KEY_1",
+		"SONARR_URL_1", "SONARR_API_KEY_1",
 		"POLL_INTERVAL", "DRY_RUN",
 	} {
 		t.Setenv(key, "")
@@ -55,11 +57,8 @@ func TestLoad_OnlyRadarr(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if cfg.RadarrURL != "http://radarr:7878" {
-		t.Errorf("unexpected RadarrURL: %s", cfg.RadarrURL)
-	}
-	if cfg.SonarrURL != "" {
-		t.Errorf("expected SonarrURL to be empty, got %s", cfg.SonarrURL)
+	if len(cfg.Instances) != 1 || cfg.Instances[0].URL != "http://radarr:7878" || cfg.Instances[0].Type != "radarr" {
+		t.Errorf("unexpected Instances: %+v", cfg.Instances)
 	}
 }
 
@@ -72,11 +71,8 @@ func TestLoad_OnlySonarr(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if cfg.SonarrURL != "http://sonarr:8989" {
-		t.Errorf("unexpected SonarrURL: %s", cfg.SonarrURL)
-	}
-	if cfg.RadarrURL != "" {
-		t.Errorf("expected RadarrURL to be empty, got %s", cfg.RadarrURL)
+	if len(cfg.Instances) != 1 || cfg.Instances[0].URL != "http://sonarr:8989" || cfg.Instances[0].Type != "sonarr" {
+		t.Errorf("unexpected Instances: %+v", cfg.Instances)
 	}
 }
 
@@ -91,8 +87,28 @@ func TestLoad_BothConfigured(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if cfg.RadarrURL == "" || cfg.SonarrURL == "" {
+	if len(cfg.Instances) != 2 {
 		t.Error("expected both Radarr and Sonarr to be configured")
+	}
+}
+
+func TestLoad_MultipleInstances(t *testing.T) {
+	clearEnv(t)
+	t.Setenv("RADARR_URL", "http://radarr:7878")
+	t.Setenv("RADARR_API_KEY", "radarr-key")
+	t.Setenv("RADARR_URL_1", "http://radarr-4k:7878")
+	t.Setenv("RADARR_API_KEY_1", "radarr-4k-key")
+	t.Setenv("SONARR_URL", "http://sonarr:8989")
+	t.Setenv("SONARR_API_KEY", "sonarr-key")
+	t.Setenv("SONARR_URL_1", "http://sonarr-anime:8989")
+	t.Setenv("SONARR_API_KEY_1", "sonarr-anime-key")
+
+	cfg, err := config.Load()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(cfg.Instances) != 4 {
+		t.Errorf("expected 4 instances, got %d", len(cfg.Instances))
 	}
 }
 

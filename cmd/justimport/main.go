@@ -40,13 +40,13 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 
-	var clients []importer.ArrClient
+	clients := make([]importer.ArrClient, 0, len(cfg.Instances))
 
 	for _, instance := range cfg.Instances {
 		c := arrclient.NewClient(instance.URL, instance.APIKey, instance.Type)
 		appName, appVersion, connErr := c.CheckConnectivity(ctx)
 
-		nameDisplay := strings.ToTitle(instance.Type[:1]) + instance.Type[1:]
+		nameDisplay := strings.ToUpper(instance.Type[:1]) + instance.Type[1:]
 
 		if connErr != nil {
 			slog.Warn(fmt.Sprintf("%s: %s ✗ (failed to connect: %v) — will retry on each poll", nameDisplay, instance.URL, connErr))

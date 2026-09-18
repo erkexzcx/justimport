@@ -18,13 +18,13 @@ func init() {
 
 // mockClient is a test double for importer.ArrClient.
 type mockClient struct {
-	name             string
-	queueRecords     []arrclient.QueueRecord
-	queueErr         error
-	manualImport     []arrclient.ManualImportItem
-	manualImportErr  error
-	postCalled       int
-	postErr          error
+	name            string
+	queueRecords    []arrclient.QueueRecord
+	queueErr        error
+	manualImport    []arrclient.ManualImportItem
+	manualImportErr error
+	postCalled      int
+	postErr         error
 }
 
 func (m *mockClient) Name() string { return m.name }

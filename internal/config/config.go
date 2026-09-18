@@ -32,7 +32,7 @@ func Load() (*Config, error) {
 	if radarrURL != "" {
 		cfg.Instances = append(cfg.Instances, InstanceConfig{Type: "radarr", URL: radarrURL, APIKey: radarrAPIKey})
 	}
-	
+
 	for i := 1; ; i++ {
 		url := os.Getenv(fmt.Sprintf("RADARR_URL_%d", i))
 		if url == "" {

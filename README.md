@@ -61,7 +61,7 @@ All configuration is via environment variables. No config files.
 | `POLL_INTERVAL` | `60s` | How often to check queues (Go duration: `30s`, `1m`, `5m`, …) |
 | `DRY_RUN` | `true` | Set to `false` to enable real imports |
 
-> **Note:** You can add as many instances as you want by simply appending an incrementing number to the environment variables (e.g. `RADARR_URL_1`, `RADARR_URL_2`, etc.). You do **not** need both Radarr and Sonarr. Configure only the services you use — at least one valid URL must be set.
+> **Note:** You can add as many instances as you want by simply appending an incrementing number to the environment variables (e.g. `RADARR_URL_1`, `RADARR_URL_2`, etc.). The numbering must start at `1` and be contiguous — parsing stops at the first unset number, so `RADARR_URL_3` is ignored when `RADARR_URL_2` is not set. You do **not** need both Radarr and Sonarr. Configure only the services you use — at least one valid URL must be set.
 
 ---
 

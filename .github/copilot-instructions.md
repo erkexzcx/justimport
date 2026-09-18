@@ -66,7 +66,7 @@ At least one of `RADARR_URL` or `SONARR_URL` must be set.
 
 ## Coding Conventions
 
-- **Go version**: 1.26 (specified in `go.mod`). Use only standard library packages.
+- **Go version**: 1.27 (specified in `go.mod`). Use only standard library packages.
 - **Zero dependencies**: Do not add external dependencies. The project intentionally uses only the Go standard library.
 - **Module path**: `github.com/erkexzcx/justimport`
 - **Package structure**: All internal packages live under `internal/`. The only public entry point is `cmd/justimport/main.go`.

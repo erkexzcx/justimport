@@ -1,3 +1,3 @@
 module github.com/erkexzcx/justimport
 
-go 1.26
+go 1.25

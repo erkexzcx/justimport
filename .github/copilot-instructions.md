@@ -18,8 +18,8 @@ internal/config/              — Configuration from environment variables
 internal/importer/            — Core import logic (polling, filtering, importing)
   importer.go                 — Main business logic
   importer_test.go            — Unit tests with mock client
-Makefile                      — Build, test, lint, run targets
-Dockerfile                    — Multi-stage build (golang:1.26-alpine → distroless)
+Makefile                      — Build, test, lint, gopls and check targets
+Dockerfile                    — Multi-stage build (golang:1.27-alpine → distroless)
 docker-compose.yml            — Example Docker Compose configuration
 .golangci.yml                 — golangci-lint v2 configuration with ~20 linters enabled
 .github/workflows/test.yml    — CI: lint, unit tests, build (runs on push to main and PRs)
@@ -38,13 +38,19 @@ make test
 # Run linter (requires golangci-lint installed)
 make lint
 
+# Run static analysis with gopls (requires gopls installed)
+make gopls
+
+# Run tests, lint and gopls together
+make check
+
 # Run the application (requires env vars, see Configuration below)
 make run
 ```
 
 ### Notes on Local Development
 
-- **golangci-lint** is not installed by default in this sandbox. CI installs it via the `golangci/golangci-lint-action`. To install locally: `go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest`. If installation is not feasible, rely on `go vet ./...` for basic static analysis and let CI run the full lint suite.
+- **golangci-lint** and **gopls** are not installed by default in this sandbox. CI installs golangci-lint via the `golangci/golangci-lint-action`. To install locally: `go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest` and `go install golang.org/x/tools/gopls@latest`, then put `$(go env GOPATH)/bin` on your `PATH`. If installation is not feasible, rely on `go vet ./...` for basic static analysis and let CI run the full lint suite.
 - All tests use the standard `testing` package. No test framework is needed.
 - Tests use `httptest.NewServer` for HTTP mocking and mock implementations of the `ArrClient` interface for the importer.
 - The build produces a statically linked binary (`CGO_ENABLED=0`).
@@ -53,16 +59,18 @@ make run
 
 The application is configured **entirely via environment variables** (no config files):
 
-| Variable         | Default   | Description                                      |
-|------------------|-----------|--------------------------------------------------|
-| `RADARR_URL`     | *(unset)* | Base URL of Radarr instance                      |
-| `RADARR_API_KEY` | *(unset)* | Radarr API key                                   |
-| `SONARR_URL`     | *(unset)* | Base URL of Sonarr instance                      |
-| `SONARR_API_KEY` | *(unset)* | Sonarr API key                                   |
-| `POLL_INTERVAL`  | `60s`     | Go duration for queue poll interval               |
-| `DRY_RUN`        | `true`    | Set to `false` to enable actual imports           |
+| Variable | Default | Description |
+|---|---|---|
+| `RADARR_URL` / `RADARR_URL_<N>` | *(unset)* | Base URL of each Radarr instance |
+| `RADARR_API_KEY` / `RADARR_API_KEY_<N>` | *(unset)* | Matching Radarr API key |
+| `SONARR_URL` / `SONARR_URL_<N>` | *(unset)* | Base URL of each Sonarr instance |
+| `SONARR_API_KEY` / `SONARR_API_KEY_<N>` | *(unset)* | Matching Sonarr API key |
+| `POLL_INTERVAL` | `60s` | Go duration for queue poll interval |
+| `DRY_RUN` | `true` | Set to `false` to enable actual imports |
 
-At least one of `RADARR_URL` or `SONARR_URL` must be set.
+Add instances by appending an incrementing suffix — `RADARR_URL_1` / `RADARR_API_KEY_1`, then `_2`, and so on. The numbers must start at `1` and be contiguous: the loader stops at the first unset number, so `RADARR_URL_3` is ignored when `RADARR_URL_2` is missing. At least one Radarr or Sonarr URL must be set, otherwise `Load()` returns an error. An `API_KEY` whose `URL` is unset is ignored; a `URL` whose `API_KEY` is unset loads and polls with an empty key.
+
+`Load()` returns `Config.Instances`, a `[]InstanceConfig` of `Type` / `URL` / `APIKey`, ordered base Radarr, numbered Radarr, base Sonarr, numbered Sonarr. `main.go` builds one `arrclient.Client` per entry.
 
 ## Coding Conventions
 
@@ -90,6 +98,7 @@ All three jobs must pass for a PR to merge.
 ## Key Design Patterns
 
 - **Interface-based testing**: The `importer` package defines `ArrClient` as an interface, allowing tests to use mock implementations without external dependencies.
+- **Instance identity vs. API behaviour**: `arrclient.Client` keeps `appType` (`"radarr"` / `"sonarr"`, which selects API behaviour such as the queue query parameter) separate from `label`. `Name()` returns the label, e.g. `Radarr (http://radarr4k:7878)`, so several instances of the same app stay distinguishable. The importer keys its `lastFailed` map on `Name()`, so the label must remain unique per instance.
 - **Poll loop with graceful shutdown**: The `Importer.Run()` method uses `context.Context` cancellation with `signal.NotifyContext` for clean shutdown on SIGINT/SIGTERM.
-- **Deduplication**: Processed download IDs are tracked in a `seen` map to avoid re-processing items on subsequent polls.
+- **Deduplication**: Processed download IDs are tracked in a `seen` map to avoid re-processing items on subsequent polls. The map is keyed by download ID alone and is shared across all clients, so the same download ID appearing in two instances' queues counts as one item.
 - **Safety-first filtering**: Items with multiple files, rejections, or no match are skipped. Sample files (path containing "sample", case-insensitive) are filtered out before evaluation.

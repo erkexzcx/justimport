@@ -12,6 +12,7 @@ import (
 
 // ArrClient is the interface for interacting with a *arr instance.
 type ArrClient interface {
+	// Name returns the human-readable label of the instance, unique per instance.
 	Name() string
 	GetQueue(ctx context.Context) ([]arrclient.QueueRecord, error)
 	GetManualImport(ctx context.Context, downloadID string) ([]arrclient.ManualImportItem, error)

@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
 
@@ -46,12 +45,10 @@ func main() {
 		c := arrclient.NewClient(instance.URL, instance.APIKey, instance.Type)
 		appName, appVersion, connErr := c.CheckConnectivity(ctx)
 
-		nameDisplay := strings.ToUpper(instance.Type[:1]) + instance.Type[1:]
-
 		if connErr != nil {
-			slog.Warn(fmt.Sprintf("%s: %s ✗ (failed to connect: %v) — will retry on each poll", nameDisplay, instance.URL, connErr))
+			slog.Warn(fmt.Sprintf("%s ✗ (failed to connect: %v) — will retry on each poll", c.Name(), connErr))
 		} else {
-			slog.Info(fmt.Sprintf("%s: %s ✓ (connected, %s v%s)", nameDisplay, instance.URL, appName, appVersion))
+			slog.Info(fmt.Sprintf("%s ✓ (connected, %s v%s)", c.Name(), appName, appVersion))
 		}
 		clients = append(clients, c)
 	}

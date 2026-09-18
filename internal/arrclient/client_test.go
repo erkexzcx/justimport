@@ -226,9 +226,18 @@ func TestPostManualImport_ServerError(t *testing.T) {
 }
 
 func TestClientName(t *testing.T) {
-	client := arrclient.NewClient("http://localhost:7878", "key", "radarr")
-	if client.Name() != "radarr" {
-		t.Errorf("expected radarr, got %s", client.Name())
+	client := arrclient.NewClient("http://localhost:7878/", "key", "radarr")
+	if client.Name() != "Radarr (http://localhost:7878)" {
+		t.Errorf("unexpected name: %s", client.Name())
+	}
+}
+
+func TestClientName_DistinctPerInstance(t *testing.T) {
+	hd := arrclient.NewClient("http://radarr:7878", "key-1", "radarr")
+	uhd := arrclient.NewClient("http://radarr-4k:7878", "key-2", "radarr")
+
+	if hd.Name() == uhd.Name() {
+		t.Errorf("two Radarr instances must be distinguishable, both are %s", hd.Name())
 	}
 }
 

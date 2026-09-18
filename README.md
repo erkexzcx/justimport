@@ -101,16 +101,16 @@ services:
 2026-03-08 12:00:00 INF Starting justimport v1.0.0 (vibe-coded with ❤️)
 2026-03-08 12:00:00 INF Mode: DRY RUN (set DRY_RUN=false to enable imports)
 2026-03-08 12:00:00 INF Poll interval: 60s
-2026-03-08 12:00:00 INF Radarr: http://radarr:7878 ✓ (connected, Radarr v5.3.0)
-2026-03-08 12:00:00 INF Sonarr: http://sonarr:8989 ✓ (connected, Sonarr v4.0.0)
-2026-03-08 12:00:01 WRN [radarr] "Some.Movie.Pack.2024" → SKIPPED: 4 files found after filtering (expected exactly 1)
-2026-03-08 12:00:01 WRN [radarr] "Another.Movie.2024" → SKIPPED: 0 files found after filtering
-2026-03-08 12:00:01 INF [radarr] "Galactic.Sunrise.2025.1080p.BluRay.x264" → WOULD IMPORT (1 file, matched to "Galactic Sunrise")
+2026-03-08 12:00:00 INF Radarr (http://radarr:7878) ✓ (connected, Radarr v5.3.0)
+2026-03-08 12:00:00 INF Sonarr (http://sonarr:8989) ✓ (connected, Sonarr v4.0.0)
+2026-03-08 12:00:01 WRN [Radarr (http://radarr:7878)] "Some.Movie.Pack.2024" → SKIPPED: 4 files found after filtering (expected exactly 1)
+2026-03-08 12:00:01 WRN [Radarr (http://radarr:7878)] "Another.Movie.2024" → SKIPPED: 0 files found after filtering
+2026-03-08 12:00:01 INF [Radarr (http://radarr:7878)] "Galactic.Sunrise.2025.1080p.BluRay.x264" → WOULD IMPORT (1 file, matched to "Galactic Sunrise")
 ```
 
 **Live mode (`DRY_RUN=false`):**
 ```
-2026-03-08 12:00:01 INF [radarr] "Galactic.Sunrise.2025.1080p.BluRay.x264" → IMPORTED (1 file, matched to "Galactic Sunrise")
+2026-03-08 12:00:01 INF [Radarr (http://radarr:7878)] "Galactic.Sunrise.2025.1080p.BluRay.x264" → IMPORTED (1 file, matched to "Galactic Sunrise")
 ```
 
 ---

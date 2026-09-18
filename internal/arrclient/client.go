@@ -12,29 +12,45 @@ import (
 	"time"
 )
 
-// Client is an HTTP client for a Radarr or Sonarr instance.
+// Client is an HTTP client for a single Radarr or Sonarr instance.
 type Client struct {
 	baseURL    string
 	apiKey     string
-	name       string
+	appType    string // "radarr" or "sonarr": selects API behaviour
+	label      string // human-readable identity of this instance, see Name
 	httpClient *http.Client
 }
 
 // NewClient creates a new Client for the given *arr instance.
-func NewClient(baseURL, apiKey, name string) *Client {
+// appType is "radarr" or "sonarr" and selects the instance's API behaviour.
+func NewClient(baseURL, apiKey, appType string) *Client {
+	baseURL = strings.TrimRight(baseURL, "/")
+
 	return &Client{
-		baseURL: strings.TrimRight(baseURL, "/"),
+		baseURL: baseURL,
 		apiKey:  apiKey,
-		name:    name,
+		appType: appType,
+		label:   instanceLabel(appType, baseURL),
 		httpClient: &http.Client{
 			Timeout: 30 * time.Second,
 		},
 	}
 }
 
-// Name returns the instance name (e.g. "radarr" or "sonarr").
+// instanceLabel builds the human-readable identity of an instance. Several
+// instances of the same app can run side by side, so the URL is part of the
+// label — Name must be unique per instance, as the importer keys state on it.
+func instanceLabel(appType, baseURL string) string {
+	if appType == "" {
+		return baseURL
+	}
+
+	return strings.ToUpper(appType[:1]) + appType[1:] + " (" + baseURL + ")"
+}
+
+// Name returns the instance label, e.g. "Radarr (http://radarr4k:7878)".
 func (c *Client) Name() string {
-	return c.name
+	return c.label
 }
 
 // maxResponseBytes is the maximum response body size the client will read (10 MB).
@@ -89,7 +105,7 @@ func (c *Client) GetQueue(ctx context.Context) ([]QueueRecord, error) {
 
 	// Radarr uses includeUnknownMovieItems; Sonarr uses includeUnknownSeriesItems.
 	param := "includeUnknownMovieItems"
-	if c.name == "sonarr" {
+	if c.appType == "sonarr" {
 		param = "includeUnknownSeriesItems"
 	}
 
